@@ -7,23 +7,30 @@ export const api = axios.create({
   baseURL: `${API_URL}/api`,
 });
 
-api.interceptors.request.use((config) => {
-  const token = Cookies.get('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+const isBrowser = typeof window !== 'undefined';
 
-api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401 && typeof window !== 'undefined') {
-      Cookies.remove('token');
-      Cookies.remove('user');
-      window.location.href = '/auth/login';
+if (isBrowser) {
+  api.interceptors.request.use((config) => {
+    const token = Cookies.get('token');
+    if (token) {
+      if (!config.headers) config.headers = {};
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    return Promise.reject(err);
-  },
-);
+    return config;
+  });
+
+  api.interceptors.response.use(
+    (res) => res,
+    (err) => {
+      if (err.response?.status === 401) {
+        Cookies.remove('token');
+        Cookies.remove('user');
+        window.location.href = '/auth/login';
+      }
+      return Promise.reject(err);
+    },
+  );
+}
 
 // ─── Auth ──────────────────────────────────────────────────────────────
 export const authApi = {

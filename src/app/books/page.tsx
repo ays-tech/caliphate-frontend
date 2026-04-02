@@ -7,6 +7,8 @@ import BookCard from '@/components/books/BookCard';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Search, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function BooksPage() {
   const searchParams = useSearchParams();
   const [books,      setBooks]      = useState<any[]>([]);
@@ -17,9 +19,17 @@ export default function BooksPage() {
   const [loading,    setLoading]    = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const [search,    setSearch]    = useState(searchParams.get('search') || '');
+  const [search,    setSearch]    = useState('');
   const [scholarId, setScholarId] = useState('');
   const [type,      setType]      = useState('');
+
+  // Apply query string if present (safe in prerender + client)
+  useEffect(() => {
+    const initialSearch = searchParams?.get?.('search') || '';
+    if (initialSearch && initialSearch !== search) {
+      setSearch(initialSearch);
+    }
+  }, [searchParams, search]);
 
   // Debounce the text search — fires 400ms after the user stops typing
   const debouncedSearch = useDebounce(search, 400);
