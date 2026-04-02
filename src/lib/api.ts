@@ -13,8 +13,10 @@ if (isBrowser) {
   api.interceptors.request.use((config) => {
     const token = Cookies.get('token');
     if (token) {
-      if (!config.headers) config.headers = {};
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers = {
+        ...(config.headers || {}),
+        Authorization: `Bearer ${token}`,
+      } as any;
     }
     return config;
   });
