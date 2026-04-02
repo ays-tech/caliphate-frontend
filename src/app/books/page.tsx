@@ -20,7 +20,7 @@ export default function BooksPage() {
   const [search,    setSearch]    = useState('');
   const [scholarId, setScholarId] = useState('');
   const [type,      setType]      = useState('');
-
+ 
   // Apply query string if present (safe in prerender + client)
   useEffect(() => {
     if (typeof window === 'undefined') return;

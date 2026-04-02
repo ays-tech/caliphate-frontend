@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -7,34 +7,30 @@ export const api = axios.create({
   baseURL: `${API_URL}/api`,
 });
 
-const isBrowser = typeof window !== 'undefined';
+// ── Request interceptor — attach JWT ──────────────────────────────────
+// InternalAxiosRequestConfig is the correct type for Axios v1+ interceptors
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const token = Cookies.get('token');
+  if (token) {
+    config.headers.set('Authorization', `Bearer ${token}`);
+  }
+  return config;
+});
 
-if (isBrowser) {
-  api.interceptors.request.use((config) => {
-    const token = Cookies.get('token');
-    if (token) {
-      config.headers = {
-        ...(config.headers || {}),
-        Authorization: `Bearer ${token}`,
-      } as any;
+// ── Response interceptor — redirect on 401 ───────────────────────────
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401 && typeof window !== 'undefined') {
+      Cookies.remove('token');
+      Cookies.remove('user');
+      window.location.href = '/auth/login';
     }
-    return config;
-  });
+    return Promise.reject(err);
+  },
+);
 
-  api.interceptors.response.use(
-    (res) => res,
-    (err) => {
-      if (err.response?.status === 401) {
-        Cookies.remove('token');
-        Cookies.remove('user');
-        window.location.href = '/auth/login';
-      }
-      return Promise.reject(err);
-    },
-  );
-}
-
-// ─── Auth ──────────────────────────────────────────────────────────────
+// ─── Auth ─────────────────────────────────────────────────────────────
 export const authApi = {
   register: (data: { name: string; email: string; password: string }) =>
     api.post('/auth/register', data),
@@ -45,16 +41,16 @@ export const authApi = {
     api.patch('/auth/change-password', data),
 };
 
-// ─── Scholars ──────────────────────────────────────────────────────────
+// ─── Scholars ─────────────────────────────────────────────────────────
 export const scholarsApi = {
   getAll: (search?: string) =>
     api.get('/scholars', { params: search ? { search } : {} }),
-  getOne:  (id: string)        => api.get(`/scholars/${id}`),
+  getOne:  (id: string)         => api.get(`/scholars/${id}`),
   create:  (formData: FormData) =>
     api.post('/scholars', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   update:  (id: string, formData: FormData) =>
     api.put(`/scholars/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-  delete:  (id: string)        => api.delete(`/scholars/${id}`),
+  delete:  (id: string)         => api.delete(`/scholars/${id}`),
 };
 
 // ─── Books ────────────────────────────────────────────────────────────
@@ -80,27 +76,27 @@ export const booksApi = {
   addVolume: (bookId: string, formData: FormData) =>
     api.post(`/books/${bookId}/volumes`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 
-  approve:        (id: string) => api.patch(`/books/${id}/approve`),
-  reject:         (id: string) => api.patch(`/books/${id}/reject`),
-  delete:         (id: string) => api.delete(`/books/${id}`),
+  approve:        (id: string)     => api.patch(`/books/${id}/approve`),
+  reject:         (id: string)     => api.patch(`/books/${id}/reject`),
+  delete:         (id: string)     => api.delete(`/books/${id}`),
   getDownloadUrl: (volumeId: string) => api.get(`/books/volumes/${volumeId}/download`),
 };
 
 // ─── Events ───────────────────────────────────────────────────────────
 export const eventsApi = {
-  getAll:      ()      => api.get('/events'),
-  getUpcoming: ()      => api.get('/events/upcoming'),
-  getOne:      (id: string) => api.get(`/events/${id}`),
+  getAll:      ()                => api.get('/events'),
+  getUpcoming: ()                => api.get('/events/upcoming'),
+  getOne:      (id: string)      => api.get(`/events/${id}`),
   create: (data: { title: string; description?: string; date: string }) =>
     api.post('/events', data),
-  delete: (id: string) => api.delete(`/events/${id}`),
+  delete: (id: string)           => api.delete(`/events/${id}`),
 };
 
 // ─── Users ────────────────────────────────────────────────────────────
 export const usersApi = {
-  getAll:          () => api.get('/users'),
-  getPendingAdmins:() => api.get('/users/pending-admins'),
-  approve: (id: string) => api.patch(`/users/${id}/approve`),
-  promote: (id: string) => api.patch(`/users/${id}/promote`),
-  delete:  (id: string) => api.delete(`/users/${id}`),
+  getAll:           ()           => api.get('/users'),
+  getPendingAdmins: ()           => api.get('/users/pending-admins'),
+  approve:  (id: string)         => api.patch(`/users/${id}/approve`),
+  promote:  (id: string)         => api.patch(`/users/${id}/promote`),
+  delete:   (id: string)         => api.delete(`/users/${id}`),
 };
