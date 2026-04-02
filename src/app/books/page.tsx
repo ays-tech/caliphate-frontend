@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { booksApi, scholarsApi } from '@/lib/api';
 import BookCard from '@/components/books/BookCard';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -10,7 +9,6 @@ import { Search, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 export default function BooksPage() {
-  const searchParams = useSearchParams();
   const [books,      setBooks]      = useState<any[]>([]);
   const [scholars,   setScholars]   = useState<any[]>([]);
   const [total,      setTotal]      = useState(0);
@@ -25,11 +23,13 @@ export default function BooksPage() {
 
   // Apply query string if present (safe in prerender + client)
   useEffect(() => {
-    const initialSearch = searchParams?.get?.('search') || '';
+    if (typeof window === 'undefined') return;
+    const params = new URL(window.location.href).searchParams;
+    const initialSearch = params.get('search') || '';
     if (initialSearch && initialSearch !== search) {
       setSearch(initialSearch);
     }
-  }, [searchParams, search]);
+  }, [search]);
 
   // Debounce the text search — fires 400ms after the user stops typing
   const debouncedSearch = useDebounce(search, 400);
