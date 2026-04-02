@@ -1,0 +1,15 @@
+{
+  "name": "CaliphateMakhtaba",
+  "short_name": "Makhtaba",
+  "description": "A curated digital library preserving the works of Islamic scholars",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf6ef",
+  "theme_color": "#14532d",
+  "orientation": "portrait-primary",
+  "lang": "en",
+  "categories": ["books", "education", "religion"],
+  "screenshots": [],
+  "icons": []
+}
