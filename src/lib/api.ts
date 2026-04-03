@@ -2,6 +2,7 @@ import axios, { InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const FRONTEND_URL = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
 
 export const api = axios.create({
   baseURL: `${API_URL}/api`,
@@ -15,6 +16,31 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     config.headers.set('Authorization', `Bearer ${token}`);
   }
   return config;
+});
+
+// ── Response interceptor — transform media URLs ──────────────────────
+api.interceptors.response.use((res) => {
+  // Transform any /media/ URLs to point to frontend
+  if (res.data) {
+    const transformMediaUrls = (obj: any): any => {
+      if (typeof obj === 'string' && obj.startsWith('/media/')) {
+        return `${FRONTEND_URL}${obj}`;
+      }
+      if (Array.isArray(obj)) {
+        return obj.map(transformMediaUrls);
+      }
+      if (obj && typeof obj === 'object') {
+        const transformed: any = {};
+        for (const key in obj) {
+          transformed[key] = transformMediaUrls(obj[key]);
+        }
+        return transformed;
+      }
+      return obj;
+    };
+    res.data = transformMediaUrls(res.data);
+  }
+  return res;
 });
 
 // ── Response interceptor — redirect on 401 ───────────────────────────

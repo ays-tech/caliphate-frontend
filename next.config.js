@@ -16,7 +16,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'api.lo9in.com',
       },
-      // Local development
+      // Local development - backend serves media files
       {
         protocol: 'http',
         hostname: 'localhost',
