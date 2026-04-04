@@ -10,6 +10,8 @@ const NAV = [
   { href: '/',         label: 'Home' },
   { href: '/books',    label: 'Books' },
   { href: '/scholars', label: 'Scholars' },
+  { href: '/about',    label: 'About' },
+  { href: '/contact',  label: 'Contact' },
 ];
 
 export default function Navbar() {
@@ -33,10 +35,9 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-ink-950 border-b border-ink-800 safe-top">
-      {/* Top gold line */}
       <div className="h-0.5 bg-gradient-to-r from-transparent via-gold-500 to-transparent" />
-
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-400 to-gold-700 flex items-center justify-center shadow-glow-gold">
@@ -48,13 +49,13 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-0.5">
           {NAV.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className={`px-4 py-2 rounded-lg text-sm font-body transition-all duration-200 ${
+              className={`px-3.5 py-2 rounded-lg text-sm font-body transition-all duration-200 ${
                 isActive(href)
                   ? 'bg-gold-600/20 text-gold-400 font-semibold'
                   : 'text-ink-300 hover:text-ivory hover:bg-ink-800'
@@ -66,7 +67,7 @@ export default function Navbar() {
           {isAdmin && (
             <Link
               href="/admin"
-              className={`px-4 py-2 rounded-lg text-sm font-body transition-all duration-200 flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-lg text-sm font-body transition-all duration-200 flex items-center gap-1.5 ${
                 isActive('/admin')
                   ? 'bg-emerald-900/40 text-emerald-400 font-semibold'
                   : 'text-ink-300 hover:text-ivory hover:bg-ink-800'
@@ -77,7 +78,7 @@ export default function Navbar() {
           )}
         </nav>
 
-        {/* Auth area */}
+        {/* Auth */}
         <div className="flex items-center gap-2">
           {user ? (
             <div className="relative" ref={dropRef}>
@@ -91,7 +92,6 @@ export default function Navbar() {
                 <span className="hidden sm:block text-ivory text-xs font-body max-w-24 truncate">{user.name}</span>
                 <ChevronDown className={`w-3 h-3 text-ink-400 transition-transform ${dropOpen ? 'rotate-180' : ''}`} />
               </button>
-
               {dropOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-ink-900 border border-ink-700 rounded-xl shadow-xl overflow-hidden animate-fade-in">
                   <div className="px-4 py-3 border-b border-ink-800">
