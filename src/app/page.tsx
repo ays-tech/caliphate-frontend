@@ -69,136 +69,48 @@ function RotatingQuote() {
   );
 }
 
-// ── Mosque SVG (contained, no bleed) ────────────────────────────────
 function MosqueSVG() {
   return (
-    <svg
-      viewBox="0 0 800 280"
-      preserveAspectRatio="xMidYMax meet"
-      className="absolute bottom-0 left-0 right-0 w-full"
-      aria-hidden="true"
-    >
-      <defs>
-        {/* Stars pattern */}
-        <pattern id="starPat" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-          <polygon
-            points="30,2 33,20 50,14 38,27 55,37 36,35 33,53 25,37 7,43 17,29 3,19 21,21"
-            fill="#d4900f" fillOpacity="0.06"
-          />
-        </pattern>
-        {/* Geo pattern */}
-        <pattern id="geoPat" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-          <polygon points="40,4 76,22 76,58 40,76 4,58 4,22"
-            fill="none" stroke="#d4900f" strokeOpacity="0.07" strokeWidth="0.8"/>
-        </pattern>
-      </defs>
+    <div className="absolute inset-0 w-full h-full overflow-hidden">
+      {/* Background Image */}
+      <img
+        src="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f"
+        className="absolute inset-0 w-full h-full object-cover scale-105"
+        alt="mosque"
+      />
 
-      {/* Twinkling stars */}
-      {[
-        [60,25,1.2],[130,15,0.9],[210,30,1.4],[300,12,1.0],[380,22,0.8],
-        [450,18,1.3],[520,28,0.7],[600,14,1.1],[670,24,1.5],[740,18,0.9],
-        [95,55,0.8],[180,42,1.1],[260,50,0.7],[340,44,1.3],[420,55,0.9],
-        [490,46,1.0],[560,42,0.8],[640,52,1.2],[710,48,0.7],[770,38,1.0],
-      ].map(([x, y, r], i) => (
-        <circle
-          key={i} cx={x} cy={y} r={r} fill="white"
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/70" />
+
+      {/* Floating Stars */}
+      {[...Array(20)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-white"
           style={{
-            animation:      `twinkle ${2 + (i % 4) * 0.6}s ease-in-out infinite`,
-            animationDelay: `${(i * 0.28) % 3}s`,
+            width: Math.random() * 4 + 1 + 'px',
+            height: Math.random() * 4 + 1 + 'px',
+            top: Math.random() * 100 + '%',
+            left: Math.random() * 100 + '%',
+            opacity: Math.random() * 0.7 + 0.3,
+            animation: `float ${8 + Math.random() * 8}s ease-in-out infinite`,
+            animationDelay: Math.random() * 5 + 's',
           }}
         />
       ))}
 
-      {/* Moon + crescent */}
-      <circle cx="680" cy="45" r="20" fill="#fdf0ba" fillOpacity="0.85"/>
-      <circle cx="692" cy="38" r="16" fill="#0a1628"/>
-
-      {/* ── Far-background minarets (dim) ── */}
-      <g opacity="0.2" fill="#15803d">
-        <rect x="75"  y="160" width="14" height="120"/>
-        <ellipse cx="82"  cy="160" rx="7" ry="11"/>
-        <circle  cx="82"  cy="151" r="3"/>
-        <rect x="710" y="165" width="14" height="115"/>
-        <ellipse cx="717" cy="165" rx="7" ry="11"/>
-        <circle  cx="717" cy="156" r="3"/>
-      </g>
-
-      {/* ── Mid minarets ── */}
-      <g opacity="0.45" fill="#166534">
-        <rect x="170" y="130" width="18" height="150"/>
-        <ellipse cx="179" cy="130" rx="9" ry="14"/>
-        <circle  cx="179" cy="118" r="4"/>
-        <rect x="612" y="135" width="18" height="145"/>
-        <ellipse cx="621" cy="135" rx="9" ry="14"/>
-        <circle  cx="621" cy="123" r="4"/>
-      </g>
-
-      {/* ── Main mosque body ── */}
-      <g fill="#14532d">
-        {/* Base */}
-        <rect x="240" y="195" width="320" height="85"/>
-
-        {/* Arched windows with amber glow */}
-        {[275,325,375,425,475,525].map((x, i) => (
-          <g key={i}>
-            <rect x={x} y="207" width="22" height="30"/>
-            <ellipse cx={x+11} cy="207" rx="11" ry="9"/>
-            <ellipse cx={x+11} cy="215" rx="7" ry="10" fill="#d4900f" fillOpacity="0.4"/>
-          </g>
-        ))}
-
-        {/* Side domes */}
-        <ellipse cx="298" cy="195" rx="42" ry="28"/>
-        <ellipse cx="502" cy="195" rx="42" ry="28"/>
-
-        {/* Main dome */}
-        <ellipse cx="400" cy="175" rx="76" ry="52"/>
-        {/* Dome highlight */}
-        <ellipse cx="391" cy="157" rx="28" ry="17" fill="#166534" fillOpacity="0.45"/>
-
-        {/* Main finial */}
-        <rect x="397" y="123" width="6" height="26" fill="#d4900f"/>
-        {/* Crescent */}
-        <path d="M400 118 Q412 110 414 122 Q406 117 400 118Z" fill="#d4900f"/>
-        <circle cx="410" cy="116" r="3.5" fill="#f5b019"/>
-
-        {/* Side finials */}
-        <rect x="296" y="167" width="4" height="16" fill="#d4900f"/>
-        <circle cx="298" cy="165" r="3" fill="#f5b019"/>
-        <rect x="500" y="167" width="4" height="16" fill="#d4900f"/>
-        <circle cx="502" cy="165" r="3" fill="#f5b019"/>
-
-        {/* Main minarets */}
-        <rect x="252" y="105" width="26" height="155"/>
-        <ellipse cx="265" cy="105" rx="13" ry="20"/>
-        <circle  cx="265" cy="91"  r="6"/>
-        <rect x="522" y="105" width="26" height="155"/>
-        <ellipse cx="535" cy="105" rx="13" ry="20"/>
-        <circle  cx="535" cy="91"  r="6"/>
-
-        {/* Balconies */}
-        <rect x="246" y="162" width="38" height="5" rx="2"/>
-        <rect x="516" y="162" width="38" height="5" rx="2"/>
-        <rect x="246" y="198" width="38" height="5" rx="2"/>
-        <rect x="516" y="198" width="38" height="5" rx="2"/>
-
-        {/* Minaret finials */}
-        <rect x="263" y="70"  width="4" height="15" fill="#d4900f"/>
-        <path d="M265 66 Q274 60 276 70 Q270 66 265 66Z" fill="#d4900f"/>
-        <rect x="533" y="70"  width="4" height="15" fill="#d4900f"/>
-        <path d="M535 66 Q544 60 546 70 Q540 66 535 66Z" fill="#d4900f"/>
-      </g>
-
-      {/* Ground */}
-      <rect x="0" y="270" width="800" height="10" fill="#060e0e"/>
-
-      {/* Pattern overlays */}
-      <rect width="800" height="280" fill="url(#geoPat)"/>
-      <rect width="800" height="200" fill="url(#starPat)"/>
-    </svg>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0; }
+          10% { opacity: 0.8; }
+          50% { opacity: 0.6; }
+          90% { opacity: 0; }
+          100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+        }
+      `}</style>
+    </div>
   );
 }
-
 // ── Section header ───────────────────────────────────────────────────
 function SectionHeader({ title, arabic, href }: { title: string; arabic?: string; href: string }) {
   return (
