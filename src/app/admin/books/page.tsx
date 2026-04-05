@@ -333,9 +333,9 @@ export default function AdminBooksPage() {
 
   // Format icon for table display
   const FormatIcon = ({ fmt }: { fmt: string }) => {
-    if (fmt === 'AUDIO') return <Mic   className="w-3.5 h-3.5 text-blue-500"  title="Audio" />;
-    if (fmt === 'VIDEO') return <Video className="w-3.5 h-3.5 text-purple-500" title="Video" />;
-    return <BookOpen className="w-3.5 h-3.5 text-emerald-600" title="Book" />;
+    if (fmt === 'AUDIO') return <Mic   className="w-3.5 h-3.5 text-blue-500" />;
+    if (fmt === 'VIDEO') return <Video className="w-3.5 h-3.5 text-purple-500" />;
+    return <BookOpen className="w-3.5 h-3.5 text-emerald-600" />;
   };
 
   // ── Shared form body ──────────────────────────────────────────────
