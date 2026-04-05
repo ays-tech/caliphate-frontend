@@ -1,10 +1,9 @@
-'use client';
-
 import Link from 'next/link';
 import { BookOpen, Users, Shield, Globe, Eye, ArrowRight, User } from 'lucide-react';
 
-// ── Media images from public folder ───────────────────────────────────
-const media = (f: string) => `/media/${f}`;
+// ── API base for media images ─────────────────────────────────────────
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const media = (f: string) => `${API}/media/${f}`;
 
 // ── Contributors ──────────────────────────────────────────────────────
 const CONTRIBUTORS = [
