@@ -38,8 +38,8 @@ function Modal({ title, arabic, onClose, children }: {
   title: string; arabic?: string; onClose: () => void; children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 bg-ink-950/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-fade-up">
+    <div className="fixed inset-0 bg-ink-950/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-visible animate-fade-up">
         <div className="h-0.5 bg-gradient-to-r from-transparent via-gold-400 to-transparent" />
         <div className="px-5 py-4 border-b border-ink-100 flex items-center justify-between">
           <div>
@@ -50,7 +50,7 @@ function Modal({ title, arabic, onClose, children }: {
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-5 max-h-[85vh] overflow-y-auto">{children}</div>
+        <div className="p-5 max-h-[90vh] overflow-y-auto">{children}</div>
       </div>
     </div>
   );
