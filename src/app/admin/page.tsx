@@ -58,19 +58,19 @@ export default function AdminPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 stagger">
         {cards.map((card) => (
           <Link key={card.label} href={card.href}>
-            <div className={`relative rounded-2xl overflow-hidden bg-gradient-to-br ${card.color} p-5 text-white group cursor-pointer hover:shadow-card-hover transition-shadow`}
+            <div className={`relative rounded-2xl overflow-hidden bg-gradient-to-br ${card.color} p-5 group cursor-pointer hover:shadow-card-hover transition-shadow`}
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpolygon points='20,2 24,14 37,14 27,22 31,35 20,27 9,35 13,22 3,14 16,14'/%3E%3C/g%3E%3C/svg%3E")`,
               }}
             >
-              <card.icon className="w-6 h-6 text-white/60 mb-3" />
+              <card.icon className="w-8 h-8 text-black mb-3" />
               {loading
-                ? <div className="skeleton h-7 w-12 mb-1" style={{ background: 'rgba(255,255,255,0.15)' }} />
-                : <p className="font-display text-2xl text-white mb-0.5">{card.value.toLocaleString()}</p>
+                ? <div className="skeleton h-8 w-16 mb-2" style={{ background: 'rgba(0,0,0,0.2)' }} />
+                : <p className="font-display text-4xl font-bold text-black mb-1">{card.value.toLocaleString()}</p>
               }
-              <p className="font-body text-white/70 text-xs">{card.label}</p>
-              <p className="font-arabic text-white/40 text-sm mt-0.5">{card.arabic}</p>
-              <ArrowRight className="absolute bottom-4 right-4 w-4 h-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-1 transition-all" />
+              <p className="font-body text-black text-xs font-semibold mb-1">{card.label}</p>
+              <p className="font-arabic text-black text-sm opacity-80">{card.arabic}</p>
+              <ArrowRight className="absolute bottom-4 right-4 w-4 h-4 text-black opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
             </div>
           </Link>
         ))}
