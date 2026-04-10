@@ -7,17 +7,18 @@ import Link from 'next/link';
 import {
   LayoutDashboard, BookOpen, Users, GraduationCap,
   Calendar, Shield, LogOut, ChevronRight, Menu, X,
-  BookMarked, Settings,
+  BookMarked, Settings, Bell,
 } from 'lucide-react';
 
 const NAV = [
-  { href: '/admin',            label: 'Overview',    arabic: 'نظرة عامة',    icon: LayoutDashboard, exact: true },
-  { href: '/admin/books',      label: 'Books',       arabic: 'الكتب',         icon: BookOpen },
-  { href: '/admin/scholars',   label: 'Scholars',    arabic: 'العلماء',       icon: GraduationCap },
-  { href: '/admin/events',     label: 'Events',      arabic: 'الفعاليات',     icon: Calendar },
-  { href: '/admin/moderation', label: 'Moderation',  arabic: 'المراجعة',     icon: Shield,          superAdminOnly: true },
-  { href: '/admin/users',      label: 'Users',       arabic: 'المستخدمون',    icon: Users,           superAdminOnly: true },
-  { href: '/admin/settings',   label: 'Settings',    arabic: 'الإعدادات',    icon: Settings },
+  { href: '/admin',               label: 'Overview',       arabic: 'نظرة عامة',    icon: LayoutDashboard, exact: true },
+  { href: '/admin/books',         label: 'Books',          arabic: 'الكتب',         icon: BookOpen },
+  { href: '/admin/scholars',      label: 'Scholars',       arabic: 'العلماء',       icon: GraduationCap },
+  { href: '/admin/events',        label: 'Events',         arabic: 'الفعاليات',     icon: Calendar },
+  { href: '/admin/notifications', label: 'Notifications',  arabic: 'الإشعارات',    icon: Bell },
+  { href: '/admin/moderation',    label: 'Moderation',     arabic: 'المراجعة',     icon: Shield,  superAdminOnly: true },
+  { href: '/admin/users',         label: 'Users',          arabic: 'المستخدمون',   icon: Users,   superAdminOnly: true },
+  { href: '/admin/settings',      label: 'Settings',       arabic: 'الإعدادات',    icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
