@@ -2,25 +2,18 @@
 const nextConfig = {
   images: {
     remotePatterns: [
-      // Cloudflare R2 (for uploaded book covers / volumes)
-      {
-        protocol: 'https',
-        hostname: '**.r2.dev',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.cloudflarestorage.com',
-      },
-      // Production VPS — scholar images and any backend-served media
+      // Production VPS — /media/ (seeded) and /uploads/ (admin uploaded)
       {
         protocol: 'https',
         hostname: 'api.lo9in.com',
+        pathname: '/**',
       },
-      // Local development - backend serves media files
+      // Local development
       {
         protocol: 'http',
         hostname: 'localhost',
-        port: '3001',
+        port:     '3001',
+        pathname: '/**',
       },
     ],
   },
