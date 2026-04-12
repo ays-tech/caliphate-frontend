@@ -69,72 +69,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* PWA install prompt — shows on mobile if app not installed */}
           <PWAInstallBanner />
 
-          {/* ── Footer ─────────────────────────────────────────────── */}
-          <footer className="hidden md:block bg-ink-950 text-ink-400">
-            <div className="h-px bg-gradient-to-r from-transparent via-gold-500/60 to-transparent" />
-            <div className="max-w-6xl mx-auto px-4 py-12">
-              <div className="grid grid-cols-4 gap-8 mb-10">
-                <div className="col-span-1">
-                  <p className="font-display text-ivory text-sm tracking-widest mb-1">CaliphateMakhtaba</p>
-                  <p className="font-arabic text-gold-400 text-xl mb-3">مكتبة الخلافة</p>
-                  <p className="text-ink-500 text-xs font-body leading-relaxed">
-                    A free digital library preserving the scholarly heritage of Islam.
-                  </p>
-                </div>
-                <div>
-                  <p className="font-display text-ivory text-[10px] tracking-widest uppercase mb-3">Library</p>
-                  <ul className="space-y-2">
-                    {[
-                      { href: '/books',    label: 'Browse Books' },
-                      { href: '/scholars', label: 'Scholars' },
-                    ].map(({ href, label }) => (
-                      <li key={href}>
-                        <Link href={href} className="text-ink-400 hover:text-gold-400 text-xs font-body transition-colors">
-                          {label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-display text-ivory text-[10px] tracking-widest uppercase mb-3">About</p>
-                  <ul className="space-y-2">
-                    {[
-                      { href: '/about',   label: 'About the Library' },
-                      { href: '/contact', label: 'Contact Us' },
-                    ].map(({ href, label }) => (
-                      <li key={href}>
-                        <Link href={href} className="text-ink-400 hover:text-gold-400 text-xs font-body transition-colors">
-                          {label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="text-right">
-                  <p className="font-arabic text-gold-500 text-lg leading-relaxed mb-1">
-                    وَقُل رَّبِّ زِدْنِي عِلْمًا
-                  </p>
-                  <p className="text-ink-500 text-[10px] font-body italic">
-                    "My Lord, increase me in knowledge."
-                  </p>
-                  <p className="text-gold-600 text-[10px] font-display tracking-widest mt-1">
-                    Al-Quran 20:114
-                  </p>
-                </div>
-              </div>
-              <div className="pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <p className="text-xs text-ink-600 font-body">
-                  © {new Date().getFullYear()} CaliphateMakhtaba · Preserving Islamic Knowledge
-                </p>
-                <div className="flex items-center gap-1 text-ink-600">
-                  <span className="text-xs font-body">Built with</span>
-                  <span className="font-arabic text-gold-600 text-sm mx-1">إخلاص</span>
-                  <span className="text-xs font-body">for the Ummah</span>
-                </div>
-              </div>
-            </div>
-          </footer>
+        
+          
         </AuthProvider>
       </body>
     </html>
