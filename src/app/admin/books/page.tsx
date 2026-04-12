@@ -9,10 +9,9 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const MAX_IMG_MB   = 5;
-const MAX_FILE_MB  = 500;
+const MAX_IMG_MB  = 5;
+const MAX_FILE_MB = 500;
 
-// ── Options ───────────────────────────────────────────────────────────
 const LANGUAGES = [
   { value: 'ARABIC',   label: 'Arabic',   arabic: 'عربي' },
   { value: 'ENGLISH',  label: 'English',  arabic: 'إنجليزي' },
@@ -26,11 +25,21 @@ const FORMATS = [
   { value: 'VIDEO', label: 'Video',       icon: Video,    note: 'MP4, WEBM, MOV' },
 ];
 
-// ── Accept strings per format ─────────────────────────────────────────
 const FORMAT_ACCEPT: Record<string, string> = {
   BOOK:  '.pdf,.epub,image/jpeg,image/png,image/webp',
-  AUDIO: 'audio/mpeg,audio/mp4,audio/ogg,audio/wav,audio/webm,.mp3,.m4a,.wav,.ogg',
-  VIDEO: 'video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogv,.mov',
+  AUDIO: 'audio/mpeg,audio/mp4,audio/ogg,audio/wav,audio/webm,.mp3,.m4a,.wav',
+  VIDEO: 'video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.mov',
+};
+
+const statusStyle: Record<string, string> = {
+  PENDING:  'badge-pending',
+  APPROVED: 'badge-approved',
+  REJECTED: 'badge-rejected',
+};
+
+const EMPTY_FORM = {
+  title: '', description: '', scholarId: '',
+  type: 'PUBLISHED', language: 'ARABIC', format: 'BOOK', volumeTitle: '',
 };
 
 // ── Shared Modal ──────────────────────────────────────────────────────
@@ -38,8 +47,8 @@ function Modal({ title, arabic, onClose, children }: {
   title: string; arabic?: string; onClose: () => void; children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 bg-ink-950/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-visible animate-fade-up">
+    <div className="fixed inset-0 bg-ink-950/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-fade-up">
         <div className="h-0.5 bg-gradient-to-r from-transparent via-gold-400 to-transparent" />
         <div className="px-5 py-4 border-b border-ink-100 flex items-center justify-between">
           <div>
@@ -50,7 +59,7 @@ function Modal({ title, arabic, onClose, children }: {
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-5 max-h-[90vh] overflow-y-auto">{children}</div>
+        <div className="p-5 max-h-[85vh] overflow-y-auto">{children}</div>
       </div>
     </div>
   );
@@ -63,7 +72,7 @@ const Label = ({ children, optional }: { children: React.ReactNode; optional?: b
   </label>
 );
 
-function FileError({ msg }: { msg: string }) {
+function FileErr({ msg }: { msg: string }) {
   return (
     <div className="mt-1.5 flex items-start gap-1.5 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
       <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
@@ -72,9 +81,10 @@ function FileError({ msg }: { msg: string }) {
   );
 }
 
-// ── Cover Image Picker ────────────────────────────────────────────────
-function CoverPicker({ current, onChange, onClear, preview }: {
-  current?: string; onChange: (f: File) => void; onClear: () => void; preview: string | null;
+// ── Cover picker ──────────────────────────────────────────────────────
+function CoverPicker({ current, preview, onChange, onClear }: {
+  current?: string; preview: string | null;
+  onChange: (f: File) => void; onClear: () => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const [err, setErr] = useState('');
@@ -82,13 +92,8 @@ function CoverPicker({ current, onChange, onClear, preview }: {
 
   const handle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]; if (!f) return; setErr('');
-    if (f.size > MAX_IMG_MB * 1024 * 1024) {
-      setErr(`Max cover size is ${MAX_IMG_MB} MB — yours is ${(f.size/1024/1024).toFixed(1)} MB`);
-      e.target.value = ''; return;
-    }
-    if (!['image/jpeg','image/jpg','image/png','image/webp'].includes(f.type)) {
-      setErr('Cover must be JPEG, PNG, or WEBP'); e.target.value = ''; return;
-    }
+    if (f.size > MAX_IMG_MB * 1024 * 1024) { setErr(`Max ${MAX_IMG_MB} MB`); e.target.value = ''; return; }
+    if (!['image/jpeg','image/jpg','image/png','image/webp'].includes(f.type)) { setErr('JPEG, PNG or WEBP only'); e.target.value = ''; return; }
     onChange(f);
   };
 
@@ -96,36 +101,27 @@ function CoverPicker({ current, onChange, onClear, preview }: {
     <div>
       <Label optional>Cover Image</Label>
       <div className="flex items-start gap-3">
-        <div
-          className="w-16 h-20 rounded-xl flex-shrink-0 bg-gradient-to-br from-emerald-900 to-ink-900 overflow-hidden flex items-center justify-center cursor-pointer border border-ink-200"
-          onClick={() => ref.current?.click()}
-        >
-          {shown
-            ? <img src={shown} alt="Cover" className="w-full h-full object-cover" />
-            : <ImgIcon className="w-6 h-6 text-ink-500 opacity-40" />
-          }
+        <div className="w-16 h-20 rounded-xl flex-shrink-0 bg-gradient-to-br from-emerald-900 to-ink-900 overflow-hidden flex items-center justify-center cursor-pointer border border-ink-200"
+          onClick={() => ref.current?.click()}>
+          {shown ? <img src={shown} alt="Cover" className="w-full h-full object-cover" /> : <ImgIcon className="w-6 h-6 text-ink-500 opacity-40" />}
         </div>
         <div className="flex-1 space-y-1.5">
           <input ref={ref} type="file" accept="image/jpeg,image/png,image/webp" onChange={handle} className="hidden" />
           <button type="button" onClick={() => ref.current?.click()}
-            className="flex items-center gap-1.5 text-xs bg-gold-50 text-gold-700 border border-gold-200 px-3 py-2 rounded-lg hover:bg-gold-100 transition-colors font-body w-full justify-center"
-          >
+            className="flex items-center gap-1.5 text-xs bg-gold-50 text-gold-700 border border-gold-200 px-3 py-2 rounded-lg hover:bg-gold-100 transition-colors font-body w-full justify-center">
             <Upload className="w-3.5 h-3.5" /> {shown ? 'Change Cover' : 'Upload Cover'}
           </button>
-          {shown && (
-            <button type="button" onClick={() => { onClear(); if(ref.current) ref.current.value=''; }}
-              className="text-[11px] text-red-400 hover:text-red-600 font-body block text-center w-full"
-            >Remove</button>
-          )}
+          {shown && <button type="button" onClick={() => { onClear(); if (ref.current) ref.current.value = ''; }}
+            className="text-[11px] text-red-400 hover:text-red-600 font-body block text-center w-full">Remove</button>}
           <p className="text-[11px] text-ink-400 font-body">JPEG · PNG · WEBP · max {MAX_IMG_MB} MB</p>
         </div>
       </div>
-      {err && <FileError msg={err} />}
+      {err && <FileErr msg={err} />}
     </div>
   );
 }
 
-// ── Book File Picker (format-aware) ───────────────────────────────────
+// ── Book file picker ──────────────────────────────────────────────────
 function BookFilePicker({ file, format, onChange, onClear }: {
   file: File | null; format: string; onChange: (f: File) => void; onClear: () => void;
 }) {
@@ -136,37 +132,21 @@ function BookFilePicker({ file, format, onChange, onClear }: {
 
   const handle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]; if (!f) return; setErr('');
-    if (f.size > MAX_FILE_MB * 1024 * 1024) {
-      setErr(`Max file size is ${MAX_FILE_MB} MB — yours is ${(f.size/1024/1024).toFixed(1)} MB`);
-      e.target.value = ''; return;
-    }
+    if (f.size > MAX_FILE_MB * 1024 * 1024) { setErr(`Max ${MAX_FILE_MB} MB`); e.target.value = ''; return; }
     onChange(f);
   };
 
-  // Reset file picker when format changes
-  useEffect(() => {
-    onClear();
-    if (ref.current) ref.current.value = '';
-    setErr('');
-  }, [format]);
+  useEffect(() => { onClear(); if (ref.current) ref.current.value = ''; setErr(''); }, [format]);
 
   return (
     <div className="rounded-xl border border-dashed border-gold-300 bg-gold-50/50 p-4">
-      <Label optional>
-        <Icon className="w-3.5 h-3.5" /> {fmt.label} File
-      </Label>
+      <Label optional><Icon className="w-3.5 h-3.5" /> {fmt.label} File</Label>
       <p className="text-[11px] text-ink-500 font-body mb-3 leading-relaxed">
-        {format === 'BOOK'  && 'Upload PDF, EPUB, or image file. Saved automatically as Volume 1.'}
-        {format === 'AUDIO' && 'Upload an audio lecture or recording (MP3, WAV, M4A). Saved as Volume 1.'}
-        {format === 'VIDEO' && 'Upload a video lecture or teaching (MP4, WEBM, MOV). Saved as Volume 1.'}
+        {format === 'BOOK'  && 'Upload PDF, EPUB, or image. Saved as Volume 1.'}
+        {format === 'AUDIO' && 'Upload audio lecture (MP3, WAV, M4A). Saved as Volume 1.'}
+        {format === 'VIDEO' && 'Upload video lecture (MP4, WEBM, MOV). Saved as Volume 1.'}
       </p>
-      <input
-        ref={ref}
-        type="file"
-        accept={FORMAT_ACCEPT[format]}
-        onChange={handle}
-        className="hidden"
-      />
+      <input ref={ref} type="file" accept={FORMAT_ACCEPT[format]} onChange={handle} className="hidden" />
       {file ? (
         <div className="flex items-center gap-2 bg-white border border-gold-200 rounded-lg px-3 py-2">
           <FileText className="w-4 h-4 text-gold-600 flex-shrink-0" />
@@ -174,35 +154,133 @@ function BookFilePicker({ file, format, onChange, onClear }: {
             <p className="text-xs font-body text-ink-700 truncate">{file.name}</p>
             <p className="text-[10px] text-ink-400">{(file.size/1024/1024).toFixed(1)} MB</p>
           </div>
-          <button type="button" onClick={() => { onClear(); if(ref.current) ref.current.value=''; }}
-            className="text-ink-400 hover:text-red-500 transition-colors flex-shrink-0">
-            <X className="w-3.5 h-3.5" />
-          </button>
+          <button type="button" onClick={() => { onClear(); if (ref.current) ref.current.value = ''; }}
+            className="text-ink-400 hover:text-red-500 transition-colors flex-shrink-0"><X className="w-3.5 h-3.5" /></button>
         </div>
       ) : (
         <button type="button" onClick={() => ref.current?.click()}
-          className="flex items-center gap-1.5 text-xs bg-white text-gold-700 border border-gold-200 px-3 py-2 rounded-lg hover:bg-gold-50 transition-colors font-body w-full justify-center"
-        >
+          className="flex items-center gap-1.5 text-xs bg-white text-gold-700 border border-gold-200 px-3 py-2 rounded-lg hover:bg-gold-50 transition-colors font-body w-full justify-center">
           <Upload className="w-3.5 h-3.5" /> Choose {fmt.label} File
         </button>
       )}
-      {err && <FileError msg={err} />}
+      {err && <FileErr msg={err} />}
       <p className="text-[10px] text-ink-400 font-body mt-2">{fmt.note} · max {MAX_FILE_MB} MB</p>
     </div>
   );
 }
 
-// ── Status badges ─────────────────────────────────────────────────────
-const statusStyle: Record<string, string> = {
-  PENDING:  'badge-pending',
-  APPROVED: 'badge-approved',
-  REJECTED: 'badge-rejected',
-};
+// ── BookFormBody — DEFINED OUTSIDE the page component ────────────────
+// This is critical: if defined inside AdminBooksPage, React treats it as
+// a new component type on every render, unmounts/remounts it, and inputs
+// lose focus after each keystroke.
+function BookFormBody({
+  bookForm, setBookForm, scholars, isEdit, editingBook,
+  coverFile, coverPreview, bookFile,
+  onCoverChange, onCoverClear, onBookFileChange, onBookFileClear,
+}: {
+  bookForm: any; setBookForm: (f: any) => void; scholars: any[];
+  isEdit?: boolean; editingBook?: any;
+  coverFile: File | null; coverPreview: string | null; bookFile: File | null;
+  onCoverChange: (f: File) => void; onCoverClear: () => void;
+  onBookFileChange: (f: File) => void; onBookFileClear: () => void;
+}) {
+  return (
+    <>
+      <CoverPicker
+        current={isEdit ? editingBook?.coverUrl : undefined}
+        preview={coverPreview}
+        onChange={onCoverChange}
+        onClear={onCoverClear}
+      />
 
-const EMPTY_FORM = {
-  title: '', description: '', scholarId: '',
-  type: 'PUBLISHED', language: 'ARABIC', format: 'BOOK', volumeTitle: '',
-};
+      <div>
+        <Label>Title *</Label>
+        <input
+          value={bookForm.title}
+          onChange={e => setBookForm({ ...bookForm, title: e.target.value })}
+          required placeholder="Book title" className="input-islamic"
+        />
+      </div>
+
+      <div>
+        <Label>Scholar *</Label>
+        <select value={bookForm.scholarId} onChange={e => setBookForm({ ...bookForm, scholarId: e.target.value })}
+          required className="input-islamic">
+          <option value="">Select a scholar…</option>
+          {scholars.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+      </div>
+
+      <div>
+        <Label optional>Description</Label>
+        <textarea
+          value={bookForm.description}
+          onChange={e => setBookForm({ ...bookForm, description: e.target.value })}
+          rows={3} placeholder="Brief description…" className="input-islamic resize-none"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {/* Format radio */}
+        <div>
+          <Label>Format</Label>
+          <div className="space-y-1.5">
+            {FORMATS.map(({ value, label, icon: Icon }) => (
+              <label key={value}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border cursor-pointer transition-colors ${
+                  bookForm.format === value ? 'border-gold-400 bg-gold-50 text-gold-800' : 'border-ink-200 hover:border-gold-200'
+                }`}>
+                <input type="radio" name="book-format" value={value}
+                  checked={bookForm.format === value}
+                  onChange={() => setBookForm({ ...bookForm, format: value })} className="hidden" />
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                <span className="font-body text-xs">{label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <Label>Language</Label>
+            <select value={bookForm.language} onChange={e => setBookForm({ ...bookForm, language: e.target.value })}
+              className="input-islamic">
+              {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label} — {l.arabic}</option>)}
+            </select>
+          </div>
+          <div>
+            <Label>Publication</Label>
+            <select value={bookForm.type} onChange={e => setBookForm({ ...bookForm, type: e.target.value })}
+              className="input-islamic">
+              <option value="PUBLISHED">Published</option>
+              <option value="UNPUBLISHED">Manuscript</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {!isEdit && (
+        <>
+          <BookFilePicker
+            file={bookFile} format={bookForm.format}
+            onChange={onBookFileChange} onClear={onBookFileClear}
+          />
+          {bookFile && (
+            <div>
+              <Label optional>Volume Title</Label>
+              <input
+                value={bookForm.volumeTitle}
+                onChange={e => setBookForm({ ...bookForm, volumeTitle: e.target.value })}
+                placeholder={`${bookForm.title || 'Book'} — Volume 1`}
+                className="input-islamic text-sm"
+              />
+            </div>
+          )}
+        </>
+      )}
+    </>
+  );
+}
 
 // ── Page ──────────────────────────────────────────────────────────────
 export default function AdminBooksPage() {
@@ -256,13 +334,11 @@ export default function AdminBooksPage() {
     setCoverFile(null); setCoverPreview(null); setBookFile(null);
   };
 
-  const closeEdit = () => { setEditingBook(null); setBookForm(EMPTY_FORM); setCoverFile(null); setCoverPreview(null); };
+  const closeEdit = () => { setEditingBook(null); setCoverFile(null); setCoverPreview(null); };
 
-  const extractError = (err: any): string => {
+  const extractError = (err: any) => {
     const msg = err?.response?.data?.message;
-    if (Array.isArray(msg)) return msg[0];
-    if (typeof msg === 'string') return msg;
-    return err?.message || 'An unexpected error occurred';
+    return Array.isArray(msg) ? msg[0] : msg || 'Something went wrong';
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -294,9 +370,9 @@ export default function AdminBooksPage() {
     setSaving(true);
     try {
       const fd = new FormData();
-      if (bookForm.title.trim())              fd.append('title',       bookForm.title.trim());
-      if (bookForm.description !== undefined) fd.append('description', bookForm.description.trim());
-      if (bookForm.scholarId)                 fd.append('scholarId',   bookForm.scholarId);
+      if (bookForm.title.trim())  fd.append('title',       bookForm.title.trim());
+      if (bookForm.description)   fd.append('description', bookForm.description.trim());
+      if (bookForm.scholarId)     fd.append('scholarId',   bookForm.scholarId);
       fd.append('type',     bookForm.type);
       fd.append('language', bookForm.language);
       fd.append('format',   bookForm.format);
@@ -331,122 +407,25 @@ export default function AdminBooksPage() {
     catch (err: any) { toast.error(extractError(err)); }
   };
 
-  // Format icon for table display
   const FormatIcon = ({ fmt }: { fmt: string }) => {
     if (fmt === 'AUDIO') return <Mic   className="w-3.5 h-3.5 text-blue-500" />;
     if (fmt === 'VIDEO') return <Video className="w-3.5 h-3.5 text-purple-500" />;
     return <BookOpen className="w-3.5 h-3.5 text-emerald-600" />;
   };
 
-  // ── Shared form body ──────────────────────────────────────────────
-  const BookFormBody = ({ isEdit = false }: { isEdit?: boolean }) => (
-    <>
-      {/* Cover */}
-      <CoverPicker
-        current={isEdit ? editingBook?.coverUrl : undefined}
-        preview={coverPreview}
-        onChange={f => { setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); }}
-        onClear={() => { setCoverFile(null); setCoverPreview(null); }}
-      />
-
-      {/* Title */}
-      <div>
-        <Label>Title *</Label>
-        <input value={bookForm.title} onChange={e => setBookForm({...bookForm, title: e.target.value})}
-          required placeholder="Book title" className="input-islamic" />
-      </div>
-
-      {/* Scholar */}
-      <div>
-        <Label>Scholar *</Label>
-        <select value={bookForm.scholarId} onChange={e => setBookForm({...bookForm, scholarId: e.target.value})}
-          required className="input-islamic">
-          <option value="">Select a scholar…</option>
-          {scholars.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
-      </div>
-
-      {/* Description */}
-      <div>
-        <Label optional>Description</Label>
-        <textarea value={bookForm.description} onChange={e => setBookForm({...bookForm, description: e.target.value})}
-          rows={3} placeholder="Brief description…" className="input-islamic resize-none" />
-      </div>
-
-      {/* Format + Type row */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label>Format</Label>
-          <div className="space-y-1.5">
-            {FORMATS.map(({ value, label, icon: Icon }) => (
-              <label key={value}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border cursor-pointer transition-colors ${
-                  bookForm.format === value
-                    ? 'border-gold-400 bg-gold-50 text-gold-800'
-                    : 'border-ink-200 hover:border-gold-200'
-                }`}
-              >
-                <input type="radio" name="format" value={value}
-                  checked={bookForm.format === value}
-                  onChange={() => setBookForm({...bookForm, format: value})}
-                  className="hidden"
-                />
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                <span className="font-body text-xs">{label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div>
-            <Label>Language</Label>
-            <select value={bookForm.language} onChange={e => setBookForm({...bookForm, language: e.target.value})}
-              className="input-islamic">
-              {LANGUAGES.map(l => (
-                <option key={l.value} value={l.value}>{l.label} — {l.arabic}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <Label>Publication</Label>
-            <select value={bookForm.type} onChange={e => setBookForm({...bookForm, type: e.target.value})}
-              className="input-islamic">
-              <option value="PUBLISHED">Published</option>
-              <option value="UNPUBLISHED">Manuscript</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Book file — create only */}
-      {!isEdit && (
-        <>
-          <BookFilePicker
-            file={bookFile}
-            format={bookForm.format}
-            onChange={setBookFile}
-            onClear={() => setBookFile(null)}
-          />
-          {bookFile && (
-            <div>
-              <Label optional>Volume Title</Label>
-              <input value={bookForm.volumeTitle}
-                onChange={e => setBookForm({...bookForm, volumeTitle: e.target.value})}
-                placeholder={`${bookForm.title || 'Book'} — Volume 1`}
-                className="input-islamic text-sm"
-              />
-            </div>
-          )}
-        </>
-      )}
-    </>
-  );
+  // Shared props for BookFormBody
+  const formBodyProps = {
+    bookForm, setBookForm, scholars, editingBook,
+    coverFile, coverPreview, bookFile,
+    onCoverChange:    (f: File) => { setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); },
+    onCoverClear:     () => { setCoverFile(null); setCoverPreview(null); },
+    onBookFileChange: (f: File) => setBookFile(f),
+    onBookFileClear:  () => setBookFile(null),
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
 
-      {/* Header */}
       <div className="flex items-end justify-between">
         <div>
           <p className="font-arabic text-gold-600 text-lg">إدارة الكتب</p>
@@ -463,18 +442,18 @@ export default function AdminBooksPage() {
       <div className="bg-white rounded-2xl border border-ink-200 shadow-card overflow-hidden">
         <div className="h-0.5 bg-gradient-to-r from-transparent via-gold-400 to-transparent" />
         {loading ? (
-          <div className="p-5 space-y-3">{[...Array(5)].map((_,i) => <div key={i} className="skeleton h-14"/>)}</div>
+          <div className="p-5 space-y-3">{[...Array(5)].map((_,i) => <div key={i} className="skeleton h-14" />)}</div>
         ) : books.length === 0 ? (
           <div className="text-center py-16">
             <p className="font-arabic text-gold-300 text-xl mb-2">لا توجد كتب</p>
-            <p className="text-ink-400 text-sm font-body">No books yet. Upload the first one.</p>
+            <p className="text-ink-400 text-sm font-body">No books yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[700px]">
               <thead className="bg-ink-50 border-b border-ink-100">
                 <tr>
-                  {['','Title','Scholar','Lang','Fmt','Status','Vols',''].map((h,i) => (
+                  {['', 'Title', 'Scholar', 'Lang', 'Fmt', 'Status', 'Vols', ''].map((h, i) => (
                     <th key={i} className="text-left px-3 py-3 font-display text-ink-500 text-xs tracking-widest">{h}</th>
                   ))}
                 </tr>
@@ -482,7 +461,6 @@ export default function AdminBooksPage() {
               <tbody className="divide-y divide-ink-50">
                 {books.map((book: any) => (
                   <tr key={book.id} className="hover:bg-ink-50 transition-colors">
-                    {/* Cover thumbnail */}
                     <td className="px-3 py-3">
                       <div className="w-8 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-emerald-900 to-ink-900 flex items-center justify-center flex-shrink-0">
                         {book.coverUrl
@@ -532,7 +510,7 @@ export default function AdminBooksPage() {
       {showCreate && (
         <Modal title="Upload New Book" arabic="رفع كتاب جديد" onClose={() => setShowCreate(false)}>
           <form onSubmit={handleCreate} className="space-y-4">
-            <BookFormBody />
+            <BookFormBody {...formBodyProps} isEdit={false} />
             <div className="flex gap-3 pt-1">
               <button type="button" onClick={() => setShowCreate(false)} className="btn-ghost flex-1 py-2.5">Cancel</button>
               <button type="submit" disabled={saving} className="btn-gold flex-1 py-2.5">
@@ -552,7 +530,7 @@ export default function AdminBooksPage() {
             </p>
           </div>
           <form onSubmit={handleUpdate} className="space-y-4">
-            <BookFormBody isEdit />
+            <BookFormBody {...formBodyProps} isEdit={true} />
             <div className="flex gap-3 pt-1">
               <button type="button" onClick={closeEdit} className="btn-ghost flex-1 py-2.5">Cancel</button>
               <button type="submit" disabled={saving} className="btn-gold flex-1 py-2.5">
@@ -569,27 +547,23 @@ export default function AdminBooksPage() {
           <form onSubmit={handleAddVolume} className="space-y-4">
             <div>
               <Label>Volume Title *</Label>
-              <input value={volForm.title} onChange={e => setVolForm({...volForm, title: e.target.value})}
+              <input value={volForm.title} onChange={e => setVolForm({ ...volForm, title: e.target.value })}
                 required placeholder="e.g. Volume 2, Part Two…" className="input-islamic" />
             </div>
             <div>
               <Label>Order</Label>
-              <input type="number" min="1" value={volForm.order} onChange={e => setVolForm({...volForm, order: e.target.value})}
-                className="input-islamic" />
+              <input type="number" min="1" value={volForm.order}
+                onChange={e => setVolForm({ ...volForm, order: e.target.value })} className="input-islamic" />
             </div>
             <div>
               <Label>File *</Label>
               <p className="text-[11px] text-ink-400 font-body mb-2">PDF, EPUB, MP3, MP4, or image — max {MAX_FILE_MB} MB</p>
               <input type="file"
-                accept=".pdf,.epub,image/jpeg,image/png,image/webp,audio/mpeg,audio/mp4,audio/ogg,audio/wav,video/mp4,video/webm,video/quicktime"
+                accept=".pdf,.epub,image/jpeg,image/png,image/webp,audio/mpeg,audio/mp4,audio/wav,video/mp4,video/webm,video/quicktime"
                 onChange={e => setVolFile(e.target.files?.[0] || null)} required
                 className="w-full text-sm text-ink-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-body file:bg-gold-50 file:text-gold-700 hover:file:bg-gold-100"
               />
-              {volFile && (
-                <p className="text-[11px] text-ink-500 mt-1 font-body">
-                  {volFile.name} · {(volFile.size/1024/1024).toFixed(1)} MB
-                </p>
-              )}
+              {volFile && <p className="text-[11px] text-ink-500 mt-1 font-body">{volFile.name} · {(volFile.size/1024/1024).toFixed(1)} MB</p>}
             </div>
             <div className="flex gap-3 pt-1">
               <button type="button" onClick={() => setShowVolume(null)} className="btn-ghost flex-1 py-2.5">Cancel</button>
