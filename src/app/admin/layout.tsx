@@ -7,13 +7,14 @@ import Link from 'next/link';
 import {
   LayoutDashboard, BookOpen, Users, GraduationCap,
   Calendar, Shield, LogOut, ChevronRight, Menu, X,
-  BookMarked, Settings, Bell,
+  BookMarked, Settings, Bell, PenLine,
 } from 'lucide-react';
 
 const NAV = [
   { href: '/admin',               label: 'Overview',       arabic: 'نظرة عامة',    icon: LayoutDashboard, exact: true },
   { href: '/admin/books',         label: 'Books',          arabic: 'الكتب',         icon: BookOpen },
   { href: '/admin/scholars',      label: 'Scholars',       arabic: 'العلماء',       icon: GraduationCap },
+  { href: '/admin/authors',       label: 'Authors',        arabic: 'المؤلفون',      icon: PenLine },
   { href: '/admin/events',        label: 'Events',         arabic: 'الفعاليات',     icon: Calendar },
   { href: '/admin/notifications', label: 'Notifications',  arabic: 'الإشعارات',    icon: Bell },
   { href: '/admin/moderation',    label: 'Moderation',     arabic: 'المراجعة',     icon: Shield,  superAdminOnly: true },
@@ -40,7 +41,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      {/* Logo */}
       <div className="px-5 py-5 border-b border-ink-800">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-400 to-gold-700 flex items-center justify-center flex-shrink-0">
@@ -55,14 +55,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <div className="h-px bg-gradient-to-r from-transparent via-gold-700 to-transparent" />
 
-      {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {NAV.filter((n) => !n.superAdminOnly || user?.role === 'SUPER_ADMIN').map((item) => {
           const active = isActive(item.href, item.exact);
           return (
-            <Link
-              key={item.href}
-              href={item.href}
+            <Link key={item.href} href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group ${
                 active
                   ? 'bg-gradient-to-r from-gold-900/60 to-gold-800/20 text-gold-400 border border-gold-800/40'
@@ -80,7 +77,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         })}
       </nav>
 
-      {/* User footer */}
       <div className="px-3 py-3 border-t border-ink-800">
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-ink-800/50 mb-1">
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gold-400 to-gold-700 flex items-center justify-center flex-shrink-0">
@@ -88,17 +84,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-ivory text-xs font-body truncate">{user?.name}</p>
-            <p className={`text-[10px] font-body ${
-              user?.role === 'SUPER_ADMIN' ? 'text-gold-400' : 'text-emerald-400'
-            }`}>
+            <p className={`text-[10px] font-body ${user?.role === 'SUPER_ADMIN' ? 'text-gold-400' : 'text-emerald-400'}`}>
               {user?.role?.replace('_', ' ')}
             </p>
           </div>
         </div>
-        <button
-          onClick={logout}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-950/30 transition-colors font-body"
-        >
+        <button onClick={logout}
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-950/30 transition-colors font-body">
           <LogOut className="w-4 h-4" /> Sign out
         </button>
       </div>
@@ -107,23 +99,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex min-h-[calc(100dvh-56px)] bg-ink-50">
-      {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-56 bg-ink-950 border-r border-ink-800 fixed top-14 bottom-0 left-0 z-30">
         <SidebarContent />
       </aside>
 
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
-          <div
-            className="absolute inset-0 bg-ink-950/80 backdrop-blur-sm"
-            onClick={() => setSidebarOpen(false)}
-          />
+          <div className="absolute inset-0 bg-ink-950/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
           <aside className="relative w-64 bg-ink-950 border-r border-ink-800 flex flex-col h-full">
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="absolute top-3 right-3 text-ink-400 hover:text-ivory p-1.5 rounded-lg hover:bg-ink-800 transition-colors"
-            >
+            <button onClick={() => setSidebarOpen(false)}
+              className="absolute top-3 right-3 text-ink-400 hover:text-ivory p-1.5 rounded-lg hover:bg-ink-800 transition-colors">
               <X className="w-5 h-5" />
             </button>
             <SidebarContent />
@@ -131,12 +116,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       )}
 
-      {/* Mobile top bar */}
       <div className="md:hidden fixed top-14 left-0 right-0 z-40 bg-ink-900 border-b border-ink-800 px-4 h-11 flex items-center gap-3">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="text-ink-400 hover:text-ivory p-1.5 rounded-lg hover:bg-ink-800 transition-colors"
-        >
+        <button onClick={() => setSidebarOpen(true)}
+          className="text-ink-400 hover:text-ivory p-1.5 rounded-lg hover:bg-ink-800 transition-colors">
           <Menu className="w-5 h-5" />
         </button>
         <p className="font-display text-ivory text-xs tracking-widest">
@@ -144,7 +126,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </p>
       </div>
 
-      {/* Main content */}
       <div className="md:ml-56 flex-1 pt-11 md:pt-0">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-6">
           {children}

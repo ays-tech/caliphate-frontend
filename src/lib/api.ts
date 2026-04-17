@@ -3,69 +3,67 @@ import Cookies from 'js-cookie';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-export const api = axios.create({
-  baseURL: `${API_URL}/api`,
-});
+export const api = axios.create({ baseURL: `${API_URL}/api` });
 
-// ── Request interceptor — attach JWT ──────────────────────────────────
-// InternalAxiosRequestConfig is the correct type for Axios v1+ interceptors
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = Cookies.get('token');
-  if (token) {
-    config.headers.set('Authorization', `Bearer ${token}`);
-  }
+  if (token) config.headers.set('Authorization', `Bearer ${token}`);
   return config;
 });
 
-// ── Response interceptor — redirect on 401 ───────────────────────────
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401 && typeof window !== 'undefined') {
-      Cookies.remove('token');
-      Cookies.remove('user');
+      Cookies.remove('token'); Cookies.remove('user');
       window.location.href = '/auth/login';
     }
     return Promise.reject(err);
   },
 );
 
-// ─── Auth ─────────────────────────────────────────────────────────────
+// ── Auth ──────────────────────────────────────────────────────────────
 export const authApi = {
-  register: (data: { name: string; email: string; password: string }) =>
-    api.post('/auth/register', data),
-  login: (data: { email: string; password: string }) =>
-    api.post('/auth/login', data),
-  me: () => api.get('/auth/me'),
-  changePassword: (data: { currentPassword: string; newPassword: string }) =>
-    api.patch('/auth/change-password', data),
+  register: (data: { name: string; email: string; password: string }) => api.post('/auth/register', data),
+  login:    (data: { email: string; password: string }) => api.post('/auth/login', data),
+  me:       () => api.get('/auth/me'),
+  changePassword: (data: { currentPassword: string; newPassword: string }) => api.patch('/auth/change-password', data),
 };
 
-// ─── Scholars ─────────────────────────────────────────────────────────
+// ── Author ────────────────────────────────────────────────────────────
+export const authorApi = {
+  apply:     (formData: FormData) => api.post('/author/apply', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  getMe:     ()                   => api.get('/author/me'),
+  updateMe:  (formData: FormData) => api.patch('/author/me', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  getPublic: (id: string)         => api.get(`/author/${id}`),
+  // Admin
+  listPending: (status?: string)  => api.get('/admin/authors/pending', { params: status ? { status } : {} }),
+  getStats:    ()                  => api.get('/admin/authors/stats'),
+  approve:     (id: string, note?: string) => api.patch(`/admin/authors/${id}/approve`, { note }),
+  reject:      (id: string, note?: string) => api.patch(`/admin/authors/${id}/reject`,  { note }),
+};
+
+// ── Scholars ──────────────────────────────────────────────────────────
 export const scholarsApi = {
-  getAll: (search?: string) =>
-    api.get('/scholars', { params: search ? { search } : {} }),
-  getOne:  (id: string)         => api.get(`/scholars/${id}`),
-  create:  (formData: FormData) =>
-    api.post('/scholars', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-  update:  (id: string, formData: FormData) =>
-    api.put(`/scholars/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-  delete:  (id: string)         => api.delete(`/scholars/${id}`),
+  getAll:  (search?: string)        => api.get('/scholars', { params: search ? { search } : {} }),
+  getOne:  (id: string)             => api.get(`/scholars/${id}`),
+  create:  (formData: FormData)     => api.post('/scholars', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update:  (id: string, fd: FormData) => api.put(`/scholars/${id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete:  (id: string)             => api.delete(`/scholars/${id}`),
 };
 
-// ─── Books ────────────────────────────────────────────────────────────
+// ── Books ─────────────────────────────────────────────────────────────
 export const booksApi = {
-  getAll: (params?: {
-    search?: string; scholarId?: string; type?: string; page?: number; limit?: number;
-  }) => api.get('/books', { params }),
+  getAll: (params?: { search?: string; scholarId?: string; type?: string; language?: string; format?: string; page?: number; limit?: number }) =>
+    api.get('/books', { params }),
 
-  getAllAdmin: (params?: {
-    search?: string; status?: string; page?: number; limit?: number;
-  }) => api.get('/books/admin/all', { params }),
+  getAllAdmin: (params?: { search?: string; status?: string; page?: number; limit?: number }) =>
+    api.get('/books/admin/all', { params }),
 
-  getMostRead:    (limit?: number) => api.get('/books/most-read', { params: { limit } }),
-  getRecent:      (limit?: number) => api.get('/books/recent',    { params: { limit } }),
-  getOne:         (id: string)     => api.get(`/books/${id}`),
+  getMyBooks:   ()             => api.get('/books/my-books'),
+  getMostRead:  (limit?: number) => api.get('/books/most-read', { params: { limit } }),
+  getRecent:    (limit?: number) => api.get('/books/recent',    { params: { limit } }),
+  getOne:       (id: string)   => api.get(`/books/${id}`),
 
   create: (formData: FormData) =>
     api.post('/books', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
@@ -73,30 +71,40 @@ export const booksApi = {
   update: (id: string, formData: FormData) =>
     api.patch(`/books/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 
+  submit:    (id: string)           => api.patch(`/books/${id}/submit`),
+  approve:   (id: string)           => api.patch(`/books/${id}/approve`),
+  reject:    (id: string, note?: string) => api.patch(`/books/${id}/reject`, { note }),
+  delete:    (id: string)           => api.delete(`/books/${id}`),
+
   addVolume: (bookId: string, formData: FormData) =>
     api.post(`/books/${bookId}/volumes`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 
-  approve:        (id: string)     => api.patch(`/books/${id}/approve`),
-  reject:         (id: string)     => api.patch(`/books/${id}/reject`),
-  delete:         (id: string)     => api.delete(`/books/${id}`),
   getDownloadUrl: (volumeId: string) => api.get(`/books/volumes/${volumeId}/download`),
 };
 
-// ─── Events ───────────────────────────────────────────────────────────
+// ── Events ────────────────────────────────────────────────────────────
 export const eventsApi = {
-  getAll:      ()                => api.get('/events'),
-  getUpcoming: ()                => api.get('/events/upcoming'),
-  getOne:      (id: string)      => api.get(`/events/${id}`),
-  create: (data: { title: string; description?: string; date: string }) =>
-    api.post('/events', data),
-  delete: (id: string)           => api.delete(`/events/${id}`),
+  getAll:      ()           => api.get('/events'),
+  getUpcoming: ()           => api.get('/events/upcoming'),
+  getOne:      (id: string) => api.get(`/events/${id}`),
+  create: (data: { title: string; description?: string; date: string }) => api.post('/events', data),
+  delete: (id: string)      => api.delete(`/events/${id}`),
 };
 
-// ─── Users ────────────────────────────────────────────────────────────
+// ── Users ─────────────────────────────────────────────────────────────
 export const usersApi = {
-  getAll:           ()           => api.get('/users'),
-  getPendingAdmins: ()           => api.get('/users/pending-admins'),
-  approve:  (id: string)         => api.patch(`/users/${id}/approve`),
-  promote:  (id: string)         => api.patch(`/users/${id}/promote`),
-  delete:   (id: string)         => api.delete(`/users/${id}`),
+  getAll:           () => api.get('/users'),
+  getPendingAdmins: () => api.get('/users/pending-admins'),
+  approve:  (id: string) => api.patch(`/users/${id}/approve`),
+  promote:  (id: string) => api.patch(`/users/${id}/promote`),
+  delete:   (id: string) => api.delete(`/users/${id}`),
+};
+
+// ── Push ──────────────────────────────────────────────────────────────
+export const pushApi = {
+  getVapidKey:  ()                                       => api.get('/push/vapid-public-key'),
+  subscribe:    (sub: any)                               => api.post('/push/subscribe', sub),
+  unsubscribe:  (endpoint: string)                       => api.delete('/push/unsubscribe', { data: { endpoint } }),
+  getStats:     ()                                       => api.get('/push/stats'),
+  broadcast:    (data: { title: string; message: string; url?: string }) => api.post('/push/broadcast', data),
 };

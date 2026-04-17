@@ -17,7 +17,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title:       'CaliphateMakhtaba – Islamic Scholarly Library',
-  description: 'A curated digital library preserving the works of Islamic scholars — books, manuscripts and volumes for generations to come.',
+  description: 'A curated digital library preserving the works of Islamic scholars books, manuscripts and volumes for generations to come.',
   manifest:    '/manifest.json',
   icons: {
     icon: [

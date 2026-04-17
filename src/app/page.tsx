@@ -361,7 +361,7 @@ export default function HomePage() {
                   Explore our growing collection of scholarly works. Free to read, free to learn.
                 </p>
                 <Link href="/books" className="btn-gold">
-                  <BookOpen className="w-4 h-4" /> Explore the Library
+                  <img src="/icons/favicon.svg" alt="" className="w-4 h-4" /> Explore the Library
                 </Link>
               </div>
             </div>
